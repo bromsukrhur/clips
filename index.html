@@ -521,8 +521,8 @@ async function aiClassify(){
 
   var catList = cats.map(function(c){ return c.id+': '+c.name; }).join(', ');
   var memo = document.getElementById('clip-memo').value.trim();
-  var memoHint = memo ? ' 메모 힌트(이걸 최우선으로 카테고리 분류에 참고해줘): '+memo : '';
-  var prompt = '다음 URL을 보고 영상 제목(추측)과 카테고리를 JSON으로만 답해줘. URL: '+url+memoHint+' 카테고리 목록: '+catList+' 형식: {"title":"제목","catId":"cat_번호"} JSON만 출력. 제목은 URL에서 유추하거나 플랫폼명+내용으로 짧게. 메모 힌트가 있으면 반드시 힌트 키워드와 가장 가까운 카테고리를 선택해줘.';
+  var memoHint = memo ? ' 메모/힌트: '+memo : '';
+  var prompt = '다음 URL과 메모를 보고 영상 제목(추측)과 카테고리를 JSON으로만 답해줘. URL: '+url+memoHint+' 카테고리 목록: '+catList+' 형식: {"title":"제목","catId":"cat_번호"} JSON만 출력. 제목은 URL에서 유추하거나 플랫폼명+내용으로 짧게. 카테고리 분류 규칙: 메모에 가수명/아이돌/밴드/앨범/노래/음악 관련 키워드가 있으면 반드시 음악으로, 운동/헬스/스포츠 키워드면 스포츠로, 음식/레시피/먹방이면 요리로, 해외여행/국내여행이면 여행으로 분류해줘. 메모 키워드를 최우선으로 참고해줘.';
 
   try {
     var res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -534,7 +534,7 @@ async function aiClassify(){
         'anthropic-dangerous-direct-browser-access':'true'
       },
       body: JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
+        model:'claude-sonnet-4-6',
         max_tokens:150,
         messages:[{role:'user', content:prompt}]
       })
