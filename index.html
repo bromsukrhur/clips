@@ -648,12 +648,13 @@ renderAll();
 
 // ── 잠금화면 ──
 var PIN_KEY = 'clips_pin';
+var HIDDEN_PIN_KEY = 'clips_hidden_pin';
 var pinBuffer = '';
 var pinMode = localStorage.getItem(PIN_KEY) ? 'unlock' : 'setup'; // setup or unlock
 
 function initLock(){
   var msg = document.getElementById('pin-setup-msg');
-  if(pinMode === 'setup') msg.textContent = '처음 입력한 6자리가 비밀번호로 설정돼요';
+  if(pinMode === 'setup') msg.textContent = '처음 입력한 6자리가 메인 비밀번호로 설정돼요';
   else msg.textContent = '';
 }
 
@@ -701,11 +702,21 @@ var hiddenMode = false;
 
 function toggleHiddenMode(){
   if(!hiddenMode){
-    // 비번 확인 후 히든 모드 진입
-    var input = prompt('비밀번호 6자리를 입력하세요');
-    if(!input) return;
-    var saved = localStorage.getItem(PIN_KEY);
-    if(input !== saved){ alert('비밀번호가 틀렸어요!'); return; }
+    var savedHidden = localStorage.getItem(HIDDEN_PIN_KEY);
+    if(!savedHidden){
+      // 히든 비번 처음 설정
+      var input = prompt('히든 전용 비밀번호 6자리를 설정하세요 (메인과 다르게!)');
+      if(!input || input.length !== 6){ alert('6자리를 입력해주세요!'); return; }
+      var confirm2 = prompt('한 번 더 입력해주세요');
+      if(input !== confirm2){ alert('비밀번호가 일치하지 않아요!'); return; }
+      localStorage.setItem(HIDDEN_PIN_KEY, input);
+      savedHidden = input;
+      var input2 = savedHidden;
+    } else {
+      var input2 = prompt('히든 비밀번호 6자리를 입력하세요');
+      if(!input2) return;
+      if(input2 !== savedHidden){ alert('비밀번호가 틀렸어요!'); return; }
+    }
     hiddenMode = true;
     var btn = document.getElementById('hidden-btn');
     btn.style.borderColor = 'var(--accent)';
