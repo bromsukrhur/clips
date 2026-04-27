@@ -315,6 +315,11 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     </div>
     <div id="api-key-status" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
   </div>
+  <div style="padding:10px 16px;border-top:1px solid var(--border);">
+    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">설정</div>
+    <button onclick="resetHiddenPin()" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;text-align:left;">🔒 히든 비밀번호 재설정</button>
+    <button onclick="resetMainPin()" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;text-align:left;margin-top:4px;">🔑 메인 비밀번호 재설정</button>
+  </div>
 </aside>
 
   <!-- MAIN -->
@@ -730,6 +735,30 @@ function toggleHiddenMode(){
     document.getElementById('hidden-label').textContent = '히든';
   }
   renderAll();
+}
+
+// ── 비밀번호 재설정 ──
+function resetHiddenPin(){
+  var saved = localStorage.getItem(PIN_KEY);
+  var input = prompt('메인 비밀번호를 입력하세요 (본인 확인)');
+  if(!input) return;
+  if(input !== saved){ alert('메인 비밀번호가 틀렸어요!'); return; }
+  localStorage.removeItem(HIDDEN_PIN_KEY);
+  if(hiddenMode){ hiddenMode = false; renderAll(); }
+  alert('히든 비밀번호가 초기화됐어요! 히든 버튼을 누르면 새로 설정할 수 있어요.');
+}
+
+function resetMainPin(){
+  var saved = localStorage.getItem(PIN_KEY);
+  var input = prompt('현재 메인 비밀번호를 입력하세요');
+  if(!input) return;
+  if(input !== saved){ alert('비밀번호가 틀렸어요!'); return; }
+  var newPin = prompt('새 메인 비밀번호 6자리를 입력하세요');
+  if(!newPin || newPin.length !== 6){ alert('6자리를 입력해주세요!'); return; }
+  var confirm2 = prompt('한 번 더 입력해주세요');
+  if(newPin !== confirm2){ alert('비밀번호가 일치하지 않아요!'); return; }
+  localStorage.setItem(PIN_KEY, newPin);
+  alert('메인 비밀번호가 변경됐어요!');
 }
 
 // ── VPN 설정 ──
