@@ -518,7 +518,7 @@ async function aiClassify(){
   var prompt = '다음 URL을 보고 영상 제목(추측)과 카테고리를 JSON으로만 답해줘. URL: '+url+' 카테고리 목록: '+catList+' 형식: {"title":"제목","catId":"cat_번호"} JSON만 출력. 제목은 URL에서 유추하거나 플랫폼명+내용으로 짧게.';
 
   try {
-    var res = await fetch('https://aiprimetech.io/v1/messages', {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
       headers:{
         'Content-Type':'application/json',
