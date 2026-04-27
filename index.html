@@ -5,6 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>클립 보관함</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBzqgFOp5zLxFnUT59r7It-eZlpxq4ScB8",
+    authDomain: "clips-97919.firebaseapp.com",
+    projectId: "clips-97919",
+    storageBucket: "clips-97919.firebasestorage.app",
+    messagingSenderId: "316738081229",
+    appId: "1:316738081229:web:1154a58277ecc5db107484",
+    measurementId: "G-VW2JSDKL3Z"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const USER_ID = 'user1'; // 기기 공유용 고정 ID
+
+  window.firebaseSaveData = async function(data) {
+    try {
+      await setDoc(doc(db, 'clipdata', USER_ID), data);
+    } catch(e) { console.error('Firebase 저장 실패:', e); }
+  };
+
+  window.firebaseLoadData = async function() {
+    try {
+      const snap = await getDoc(doc(db, 'clipdata', USER_ID));
+      if(snap.exists()) return snap.data();
+    } catch(e) { console.error('Firebase 로드 실패:', e); }
+    return null;
+  };
+
+  window.firebaseReady = true;
+  window.dispatchEvent(new Event('firebaseReady'));
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -475,7 +511,30 @@ var cats = [
   {id:'cat_11', name:'기타', emoji:'📌'},
 ];
 
-function saveClips(){ localStorage.setItem('clips', JSON.stringify(clips)); }
+function saveClips(){
+  localStorage.setItem('clips', JSON.stringify(clips));
+  if(window.firebaseReady && window.firebaseSaveData){
+    window.firebaseSaveData({ clips: clips });
+  }
+}
+
+// Firebase에서 데이터 로드
+async function loadFromFirebase(){
+  if(!window.firebaseLoadData) return;
+  var data = await window.firebaseLoadData();
+  if(data && data.clips && data.clips.length > 0){
+    clips = data.clips;
+    localStorage.setItem('clips', JSON.stringify(clips));
+    renderAll();
+  }
+}
+
+window.addEventListener('firebaseReady', function(){
+  loadFromFirebase();
+});
+
+// Firebase 이미 준비된 경우
+if(window.firebaseReady) loadFromFirebase();
 
 function getYtId(url){
   var m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([^&?\/\s]{11})/);
