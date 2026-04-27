@@ -449,7 +449,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <div class="modal">
     <div class="modal-title">클립 추가</div>
     <div class="field">
-      <label>유튜브 / 인스타 링크</label>
+      <label id="url-field-label">유튜브 / 인스타 링크</label>
       <div style="display:flex;gap:8px;">
         <input type="url" id="clip-url" placeholder="https://youtube.com/... 또는 https://instagram.com/..." oninput="previewUrl()" style="flex:1;">
         <button onclick="aiClassify()" id="ai-classify-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s;">✨ AI</button>
@@ -546,6 +546,8 @@ function getIgId(url){
 function getPlatform(url){
   if(/youtube\.com|youtu\.be/.test(url)) return 'yt';
   if(/instagram\.com/.test(url)) return 'ig';
+  // 히든 모드: 일반 URL도 허용
+  if(hiddenMode && /^https?:\/\//.test(url)) return 'web';
   return null;
 }
 function getThumbnail(url){
@@ -561,7 +563,10 @@ function previewUrl(){
   var p = getPlatform(url);
   if(!p){ preview.className='url-preview'; return; }
   var ytId = getYtId(url);
-  var txt = p === 'yt' ? '✅ 유튜브 영상' + (ytId ? ' (ID: '+ytId+')' : '') : '✅ 인스타그램 링크';
+  var txt;
+  if(p === 'yt') txt = '✅ 유튜브 영상' + (ytId ? ' (ID: '+ytId+')' : '');
+  else if(p === 'ig') txt = '✅ 인스타그램 링크';
+  else txt = '🌐 일반 사이트: ' + url;
   preview.textContent = txt;
   preview.className = 'url-preview show';
 }
@@ -571,7 +576,17 @@ function openAddModal(){
   document.getElementById('clip-title').value='';
   document.getElementById('clip-memo').value='';
   document.getElementById('url-preview').className='url-preview';
-  document.getElementById('clip-hidden').checked=false;
+  document.getElementById('clip-hidden').checked=hiddenMode;
+  // 히든 모드일 때 라벨/placeholder 변경
+  var urlLabel = document.getElementById('url-field-label');
+  var urlInput = document.getElementById('clip-url');
+  if(hiddenMode){
+    urlLabel.textContent = '유튜브 / 인스타 / 일반 링크';
+    urlInput.placeholder = 'https://youtube.com/... 또는 https://...';
+  } else {
+    urlLabel.textContent = '유튜브 / 인스타 링크';
+    urlInput.placeholder = 'https://youtube.com/... 또는 https://instagram.com/...';
+  }
   var sel = document.getElementById('clip-cat');
   sel.innerHTML = cats.map(function(c){ return '<option value="'+c.id+'"'+(currentCat===c.id?' selected':'')+'>'+c.emoji+' '+c.name+'</option>'; }).join('');
   document.getElementById('add-overlay').classList.add('open');
@@ -592,7 +607,9 @@ function saveClip(){
   if(!p){ alert('유튜브 또는 인스타그램 링크만 가능해요!'); return; }
   if(!title){
     var ytId = getYtId(url);
-    title = p==='yt' ? (ytId ? '유튜브 영상 ('+ytId.slice(0,6)+'...)' : '유튜브 영상') : '인스타그램 영상';
+    if(p==='yt') title = ytId ? '유튜브 영상 ('+ytId.slice(0,6)+'...)' : '유튜브 영상';
+    else if(p==='ig') title = '인스타그램 영상';
+    else { try { title = new URL(url).hostname; } catch(e){ title = '웹 링크'; } }
   }
   var clip = { id: Date.now(), url: url, title: title, catId: catId, memo: memo, hidden: hidden, platform: p, thumb: getThumbnail(url), createdAt: new Date().toISOString() };
   clips.unshift(clip);
@@ -698,8 +715,30 @@ async function aiClassify(){
       if(catId) document.getElementById('clip-cat').value = catId;
       document.getElementById('url-preview').textContent = catId ? '📸 인스타: 카테고리 분류 완료! 제목을 입력해주세요' : '📸 인스타: 카테고리를 직접 선택해주세요';
       document.getElementById('url-preview').className = 'url-preview show';
+  } else if(platform === 'web'){
+      // ── 일반 웹사이트: AI로 카테고리 분류 ──
+      var hostname = '';
+      try { hostname = new URL(url).hostname; } catch(e){ hostname = url; }
+      if(!document.getElementById('clip-title').value.trim())
+        document.getElementById('clip-title').value = hostname;
+      if(!clipApiKey){
+        document.getElementById('url-preview').textContent = '🌐 일반 사이트: 제목을 직접 입력하고 카테고리를 선택해주세요';
+        document.getElementById('url-preview').className = 'url-preview show';
+        return;
+      }
+      var prompt = '다음 URL과 메모를 보고 카테고리를 JSON으로만 답해줘. URL: '+url+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 다른 말 하지마.';
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:50,messages:[{role:'user',content:prompt}]})
+      });
+      var data = await res.json();
+      if(data.error) throw new Error(data.error.message);
+      var catId = safeParseJson(data.content[0].text);
+      if(catId) document.getElementById('clip-cat').value = catId;
+      document.getElementById('url-preview').textContent = '🌐 일반 사이트 저장됨. 제목을 확인해주세요';
+      document.getElementById('url-preview').className = 'url-preview show';
     }
-  } catch(e) {
     alert('오류: '+e.message);
   } finally {
     btn.textContent = '✨ AI'; btn.disabled = false;
@@ -767,10 +806,10 @@ function renderCards(){
   grid.innerHTML = filtered.map(function(c){
     var thumbHtml = c.thumb
       ? '<img src="'+c.thumb+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
-        +'<div class="thumb-placeholder" style="display:none">'+(c.platform==='yt'?'▶️':'📸')+'</div>'
-      : '<div class="thumb-placeholder">'+(c.platform==='yt'?'▶️':'📸')+'</div>';
+        +'<div class="thumb-placeholder" style="display:none">'+(c.platform==='yt'?'▶️':c.platform==='ig'?'📸':'🌐')+'</div>'
+      : '<div class="thumb-placeholder">'+(c.platform==='yt'?'▶️':c.platform==='ig'?'📸':'🌐')+'</div>';
     var cat = cats.find(function(ct){ return ct.id===c.catId; });
-    var badge = c.platform==='yt' ? '<span class="platform-badge yt">YT</span>' : '<span class="platform-badge ig">IG</span>';
+    var badge = c.platform==='yt' ? '<span class="platform-badge yt">YT</span>' : c.platform==='ig' ? '<span class="platform-badge ig">IG</span>' : '<span class="platform-badge" style="background:#444;color:#fff;">WEB</span>';
     return '<div class="clip-card" onclick="openClip(\''+c.url+'\')">'
       +'<div class="thumb-wrap">'+thumbHtml+badge
       +'<div class="card-actions" onclick="event.stopPropagation()">'
