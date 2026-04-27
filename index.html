@@ -625,6 +625,22 @@ updateVpnBtn();
 initLock();
 }
 
+// JSON에서 catId 안전하게 추출
+function safeParseJson(text){
+  try {
+    var clean = text.trim().replace(/```json|```/g,'').trim();
+    // JSON 블록만 추출 시도
+    var match = clean.match(/\{[^}]+\}/);
+    if(match) clean = match[0];
+    var parsed = JSON.parse(clean);
+    return parsed.catId || null;
+  } catch(e) {
+    // catId 직접 찾기
+    var m = text.match(/"catId"\s*:\s*"(cat_\d+)"/);
+    return m ? m[1] : null;
+  }
+}
+
 async function aiClassify(){
   var url = document.getElementById('clip-url').value.trim();
   if(!url){ alert('링크를 먼저 입력해주세요!'); return; }
@@ -648,7 +664,7 @@ async function aiClassify(){
 
       // 제목 기반으로 AI 카테고리 분류
       if(clipApiKey){
-        var prompt = '다음 유튜브 영상 제목과 메모를 보고 카테고리를 JSON으로만 답해줘. 제목: '+ytTitle+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 분류 규칙: 가수명/아이돌/밴드/노래/음악→음악, 운동/헬스/스포츠→스포츠, 음식/레시피/먹방→요리, 여행→여행, 게임→게임, 패션/코디→패션, 뷰티/메이크업→뷰티, 드라마/영화/예능→드라마/영화, 브이로그/일상→일상/브이로그. 메모 키워드 최우선.';
+        var prompt = '다음 유튜브 영상 제목과 메모를 보고 카테고리를 JSON으로만 답해줘. 제목: '+ytTitle+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 다른 말 하지마. 분류 규칙: 가수명/아이돌/밴드/노래/음악→음악, 운동/헬스/스포츠→스포츠, 음식/레시피/먹방→요리, 여행→여행, 게임→게임, 패션/코디→패션, 뷰티/메이크업→뷰티, 드라마/영화/예능→드라마/영화, 브이로그/일상→일상/브이로그. 메모 키워드 최우선.';
         var aiRes = await fetch('https://api.anthropic.com/v1/messages', {
           method:'POST',
           headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -656,8 +672,8 @@ async function aiClassify(){
         });
         var aiData = await aiRes.json();
         if(!aiData.error){
-          var parsed = JSON.parse(aiData.content[0].text.trim().replace(/```json|```/g,'').trim());
-          if(parsed.catId){ document.getElementById('clip-cat').value = parsed.catId; }
+          var catId = safeParseJson(aiData.content[0].text);
+          if(catId) document.getElementById('clip-cat').value = catId;
         }
       }
       document.getElementById('url-preview').textContent = '✅ 유튜브 제목 자동 입력 완료!';
@@ -666,11 +682,11 @@ async function aiClassify(){
     } else if(platform === 'ig'){
       // ── 인스타: AI로 카테고리만 분류 ──
       if(!clipApiKey){ 
-        document.getElementById('url-preview').textContent = '📸 인스타: 제목/카테고리를 직접 입력해주세요';
+        document.getElementById('url-preview').textContent = '📸 인스타: 메모에 힌트 입력 후 AI 버튼 누르거나 직접 선택해주세요';
         document.getElementById('url-preview').className = 'url-preview show';
         return;
       }
-      var prompt = '다음 인스타그램 URL과 메모를 보고 카테고리를 JSON으로만 답해줘. URL: '+url+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 분류 규칙: 가수명/아이돌/밴드/노래/음악→음악, 운동/헬스/스포츠→스포츠, 음식/레시피/먹방→요리, 여행→여행, 게임→게임, 패션/코디→패션, 뷰티/메이크업→뷰티, 드라마/영화/예능→드라마/영화, 브이로그/일상→일상/브이로그. 메모 키워드 최우선.';
+      var prompt = '다음 인스타그램 URL과 메모를 보고 카테고리를 JSON으로만 답해줘. URL: '+url+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 다른 말 하지마. 분류 규칙: 가수명/아이돌/밴드/노래/음악→음악, 운동/헬스/스포츠→스포츠, 음식/레시피/먹방→요리, 여행→여행, 게임→게임, 패션/코디→패션, 뷰티/메이크업→뷰티, 드라마/영화/예능→드라마/영화, 브이로그/일상→일상/브이로그. 메모 키워드 최우선.';
       var res = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -678,9 +694,9 @@ async function aiClassify(){
       });
       var data = await res.json();
       if(data.error) throw new Error(data.error.message);
-      var parsed = JSON.parse(data.content[0].text.trim().replace(/```json|```/g,'').trim());
-      if(parsed.catId){ document.getElementById('clip-cat').value = parsed.catId; }
-      document.getElementById('url-preview').textContent = '📸 인스타: 카테고리 분류 완료! 제목을 입력해주세요';
+      var catId = safeParseJson(data.content[0].text);
+      if(catId) document.getElementById('clip-cat').value = catId;
+      document.getElementById('url-preview').textContent = catId ? '📸 인스타: 카테고리 분류 완료! 제목을 입력해주세요' : '📸 인스타: 카테고리를 직접 선택해주세요';
       document.getElementById('url-preview').className = 'url-preview show';
     }
   } catch(e) {
