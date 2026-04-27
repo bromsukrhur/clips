@@ -198,34 +198,6 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .empty-state .emoji { font-size: 48px; }
 .empty-state p { font-size: 14px; }
 
-/* ── CARD ANIMATIONS ── */
-@keyframes card-in {
-  0%   { opacity: 0; transform: translateY(28px) scale(0.92); }
-  60%  { transform: translateY(-6px) scale(1.02); }
-  80%  { transform: translateY(3px) scale(0.99); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes card-out {
-  0%   { opacity: 1; transform: translateX(0) scale(1); }
-  35%  { opacity: 0; transform: translateX(55px) scale(0.88) rotate(2deg); }
-  100% { opacity: 0; transform: translateX(80px) scale(0.8); }
-}
-@keyframes card-appear {
-  from { opacity: 0; transform: translateY(14px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-.clip-card.is-new {
-  animation: card-in 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) both;
-}
-.clip-card.is-deleting {
-  animation: card-out 0.32s cubic-bezier(0.4, 0, 0.8, 0.6) both;
-  pointer-events: none;
-}
-.clip-card.stagger-in {
-  opacity: 0;
-  animation: card-appear 0.28s ease both;
-}
-
 /* ── MODAL ── */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .overlay.open { display: flex; }
@@ -626,7 +598,7 @@ function saveClip(){
   clips.unshift(clip);
   saveClips();
   document.getElementById('add-overlay').classList.remove('open');
-  renderAll(clip.id); // 새 카드 ID 전달
+  renderAll();
 }
 
 
@@ -656,43 +628,63 @@ initLock();
 async function aiClassify(){
   var url = document.getElementById('clip-url').value.trim();
   if(!url){ alert('링크를 먼저 입력해주세요!'); return; }
-  if(!clipApiKey){ alert('사이드바에 API 키를 먼저 입력해주세요!'); return; }
 
   var btn = document.getElementById('ai-classify-btn');
   btn.textContent = '...'; btn.disabled = true;
 
-  var catList = cats.map(function(c){ return c.id+': '+c.name; }).join(', ');
+  var platform = getPlatform(url);
   var memo = document.getElementById('clip-memo').value.trim();
-  var memoHint = memo ? ' 메모/힌트: '+memo : '';
-  var prompt = '다음 URL과 메모를 보고 영상 제목(추측)과 카테고리를 JSON으로만 답해줘. URL: '+url+memoHint+' 카테고리 목록: '+catList+' 형식: {"title":"제목","catId":"cat_번호"} JSON만 출력. 제목은 URL에서 유추하거나 플랫폼명+내용으로 짧게. 카테고리 분류 규칙: 메모에 가수명/아이돌/밴드/앨범/노래/음악 관련 키워드가 있으면 반드시 음악으로, 운동/헬스/스포츠 키워드면 스포츠로, 음식/레시피/먹방이면 요리로, 해외여행/국내여행이면 여행으로 분류해줘. 메모 키워드를 최우선으로 참고해줘.';
+  var catList = cats.map(function(c){ return c.id+': '+c.name; }).join(', ');
 
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': clipApiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body: JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:150,
-        messages:[{role:'user', content:prompt}]
-      })
-    });
-    var data = await res.json();
-    if(data.error) throw new Error(data.error.message);
-    var parsed = JSON.parse(data.content[0].text.trim().replace(/```json|```/g,'').trim());
-    if(parsed.title) document.getElementById('clip-title').value = parsed.title;
-    if(parsed.catId){
-      var sel = document.getElementById('clip-cat');
-      sel.value = parsed.catId;
+    if(platform === 'yt'){
+      // ── 유튜브: oEmbed로 실제 제목 가져오기 ──
+      var oembedUrl = 'https://www.youtube.com/oembed?url='+encodeURIComponent(url)+'&format=json';
+      var res = await fetch(oembedUrl);
+      if(!res.ok) throw new Error('유튜브 정보를 가져오지 못했어요');
+      var data = await res.json();
+      var ytTitle = data.title || '';
+      if(ytTitle) document.getElementById('clip-title').value = ytTitle;
+
+      // 제목 기반으로 AI 카테고리 분류
+      if(clipApiKey){
+        var prompt = '다음 유튜브 영상 제목과 메모를 보고 카테고리를 JSON으로만 답해줘. 제목: '+ytTitle+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 분류 규칙: 가수명/아이돌/밴드/노래/음악→음악, 운동/헬스/스포츠→스포츠, 음식/레시피/먹방→요리, 여행→여행, 게임→게임, 패션/코디→패션, 뷰티/메이크업→뷰티, 드라마/영화/예능→드라마/영화, 브이로그/일상→일상/브이로그. 메모 키워드 최우선.';
+        var aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+          body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:50,messages:[{role:'user',content:prompt}]})
+        });
+        var aiData = await aiRes.json();
+        if(!aiData.error){
+          var parsed = JSON.parse(aiData.content[0].text.trim().replace(/```json|```/g,'').trim());
+          if(parsed.catId){ document.getElementById('clip-cat').value = parsed.catId; }
+        }
+      }
+      document.getElementById('url-preview').textContent = '✅ 유튜브 제목 자동 입력 완료!';
+      document.getElementById('url-preview').className = 'url-preview show';
+
+    } else if(platform === 'ig'){
+      // ── 인스타: AI로 카테고리만 분류 ──
+      if(!clipApiKey){ 
+        document.getElementById('url-preview').textContent = '📸 인스타: 제목/카테고리를 직접 입력해주세요';
+        document.getElementById('url-preview').className = 'url-preview show';
+        return;
+      }
+      var prompt = '다음 인스타그램 URL과 메모를 보고 카테고리를 JSON으로만 답해줘. URL: '+url+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 분류 규칙: 가수명/아이돌/밴드/노래/음악→음악, 운동/헬스/스포츠→스포츠, 음식/레시피/먹방→요리, 여행→여행, 게임→게임, 패션/코디→패션, 뷰티/메이크업→뷰티, 드라마/영화/예능→드라마/영화, 브이로그/일상→일상/브이로그. 메모 키워드 최우선.';
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:50,messages:[{role:'user',content:prompt}]})
+      });
+      var data = await res.json();
+      if(data.error) throw new Error(data.error.message);
+      var parsed = JSON.parse(data.content[0].text.trim().replace(/```json|```/g,'').trim());
+      if(parsed.catId){ document.getElementById('clip-cat').value = parsed.catId; }
+      document.getElementById('url-preview').textContent = '📸 인스타: 카테고리 분류 완료! 제목을 입력해주세요';
+      document.getElementById('url-preview').className = 'url-preview show';
     }
-    document.getElementById('url-preview').textContent = '✨ AI 분류 완료! 확인 후 저장하세요';
-    document.getElementById('url-preview').className = 'url-preview show';
   } catch(e) {
-    alert('AI 오류: '+e.message);
+    alert('오류: '+e.message);
   } finally {
     btn.textContent = '✨ AI'; btn.disabled = false;
   }
@@ -718,17 +710,8 @@ function moveClip(catId){
   renderAll();
 }
 function deleteClip(id){
-  var card = document.querySelector('[data-clip-id="'+id+'"]');
-  if(card){
-    card.classList.add('is-deleting');
-    setTimeout(function(){
-      clips = clips.filter(function(c){ return c.id !== id; });
-      saveClips(); renderCards();
-    }, 320);
-  } else {
-    clips = clips.filter(function(c){ return c.id !== id; });
-    saveClips(); renderCards();
-  }
+  clips = clips.filter(function(c){ return c.id !== id; });
+  saveClips(); renderCards();
 }
 
 function openClip(url){ window.open(url, '_blank'); }
@@ -752,7 +735,7 @@ function renderSidebar(){
   list.innerHTML = html;
 }
 
-function renderCards(newClipId){
+function renderCards(){
   var q = document.getElementById('search-input').value.trim().toLowerCase();
   var filtered = clips.filter(function(c){
     var catOk = currentCat==='all' || c.catId===currentCat;
@@ -765,16 +748,14 @@ function renderCards(newClipId){
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="emoji">🎬</div><p>클립이 없어요. 추가해보세요!</p></div>';
     return;
   }
-  grid.innerHTML = filtered.map(function(c, idx){
+  grid.innerHTML = filtered.map(function(c){
     var thumbHtml = c.thumb
       ? '<img src="'+c.thumb+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
         +'<div class="thumb-placeholder" style="display:none">'+(c.platform==='yt'?'▶️':'📸')+'</div>'
       : '<div class="thumb-placeholder">'+(c.platform==='yt'?'▶️':'📸')+'</div>';
     var cat = cats.find(function(ct){ return ct.id===c.catId; });
     var badge = c.platform==='yt' ? '<span class="platform-badge yt">YT</span>' : '<span class="platform-badge ig">IG</span>';
-    var animClass = newClipId === c.id ? 'is-new' : 'stagger-in';
-    var animDelay = newClipId === c.id ? '' : 'animation-delay:'+(idx*40)+'ms';
-    return '<div class="clip-card '+animClass+'" data-clip-id="'+c.id+'" style="'+animDelay+'" onclick="openClip(\''+c.url+'\')">'
+    return '<div class="clip-card" onclick="openClip(\''+c.url+'\')">'
       +'<div class="thumb-wrap">'+thumbHtml+badge
       +'<div class="card-actions" onclick="event.stopPropagation()">'
       +'<button class="card-action-btn btn-move" onclick="openMoveModal('+c.id+')" title="이동">↗</button>'
@@ -795,7 +776,7 @@ function selectCat(id){
   renderAll();
 }
 
-function renderAll(newClipId){ renderSidebar(); renderCards(newClipId); }
+function renderAll(){ renderSidebar(); renderCards(); }
 
 // 키보드 단축키
 document.addEventListener('keydown', function(e){
