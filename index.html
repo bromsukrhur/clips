@@ -685,7 +685,7 @@ async function aiClassify(){
         var aiRes = await fetch('https://api.anthropic.com/v1/messages', {
           method:'POST',
           headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-          body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:50,messages:[{role:'user',content:prompt}]})
+          body: JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:50,messages:[{role:'user',content:prompt}]})
         });
         var aiData = await aiRes.json();
         if(!aiData.error){
@@ -707,7 +707,7 @@ async function aiClassify(){
       var res = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:50,messages:[{role:'user',content:prompt}]})
+        body: JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:50,messages:[{role:'user',content:prompt}]})
       });
       var data = await res.json();
       if(data.error) throw new Error(data.error.message);
@@ -730,7 +730,7 @@ async function aiClassify(){
       var res = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:50,messages:[{role:'user',content:prompt}]})
+        body: JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:50,messages:[{role:'user',content:prompt}]})
       });
       var data = await res.json();
       if(data.error) throw new Error(data.error.message);
