@@ -5,42 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>클립 보관함</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBzqgFOp5zLxFnUT59r7It-eZlpxq4ScB8",
-    authDomain: "clips-97919.firebaseapp.com",
-    projectId: "clips-97919",
-    storageBucket: "clips-97919.firebasestorage.app",
-    messagingSenderId: "316738081229",
-    appId: "1:316738081229:web:1154a58277ecc5db107484",
-    measurementId: "G-VW2JSDKL3Z"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  const USER_ID = 'user1'; // 기기 공유용 고정 ID
-
-  window.firebaseSaveData = async function(data) {
-    try {
-      await setDoc(doc(db, 'clipdata', USER_ID), data);
-    } catch(e) { console.error('Firebase 저장 실패:', e); }
-  };
-
-  window.firebaseLoadData = async function() {
-    try {
-      const snap = await getDoc(doc(db, 'clipdata', USER_ID));
-      if(snap.exists()) return snap.data();
-    } catch(e) { console.error('Firebase 로드 실패:', e); }
-    return null;
-  };
-
-  window.firebaseReady = true;
-  window.dispatchEvent(new Event('firebaseReady'));
-</script>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -61,92 +25,39 @@
   --radius: 14px;
 }
 [data-theme="light"] {
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface2: #f0f0f5;
-  --surface3: #e8e8ef;
-  --border: #e2e2ea;
-  --border2: #d0d0dc;
-  --text: #1a1a2e;
-  --text2: #4a4a6a;
-  --text3: #9090aa;
-  --accent: #5a4fcc;
-  --accent2: #3d35aa;
-  --accent-glow: rgba(90,79,204,0.15);
-  --red: #e03030;
-  --green: #1a9e6a;
+  --bg: #f5f5f7; --surface: #ffffff; --surface2: #f0f0f5; --surface3: #e8e8ef;
+  --border: #e2e2ea; --border2: #d0d0dc; --text: #1a1a2e; --text2: #4a4a6a; --text3: #9090aa;
+  --accent: #5a4fcc; --accent2: #3d35aa; --accent-glow: rgba(90,79,204,0.15);
+  --red: #e03030; --green: #1a9e6a;
 }
-[data-theme="light"] .nav, [data-theme="light"] .topbar { background: rgba(255,255,255,0.92); }
+[data-theme="light"] .topbar { background: rgba(255,255,255,0.92); }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Pretendard', -apple-system, sans-serif; }
 
-/* ── LAYOUT ── */
 .layout { display: flex; height: 100vh; overflow: hidden; }
 
-/* ── SIDEBAR ── */
-.sidebar {
-  width: 240px; min-width: 240px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  padding: 20px 0;
-  overflow-y: auto;
-}
-.sidebar-logo {
-  font-size: 17px; font-weight: 700;
-  color: var(--text); padding: 0 20px 20px;
-  letter-spacing: -0.3px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 12px;
-}
+/* SIDEBAR */
+.sidebar { width: 240px; min-width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto; }
+.sidebar-logo { font-size: 17px; font-weight: 700; color: var(--text); padding: 0 20px 20px; letter-spacing: -0.3px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 .sidebar-logo span { color: var(--accent); }
 .sidebar-section { padding: 6px 12px; font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-top: 8px; }
-.cat-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 20px; cursor: pointer;
-  font-size: 14px; color: var(--text2);
-  border-radius: 0; transition: all .15s;
-  position: relative;
-}
+.cat-item { display: flex; align-items: center; gap: 10px; padding: 8px 20px; cursor: pointer; font-size: 14px; color: var(--text2); border-radius: 0; transition: all .15s; position: relative; }
 .cat-item:hover { background: var(--surface2); color: var(--text); }
 .cat-item.active { background: var(--surface2); color: var(--text); }
-.cat-item.active::before {
-  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  height: 60%; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
-}
+.cat-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 60%; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
 .cat-icon { font-size: 16px; width: 20px; text-align: center; }
 .cat-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cat-count { font-size: 11px; color: var(--text3); background: var(--surface3); padding: 1px 7px; border-radius: 20px; }
 
-/* ── MAIN ── */
+/* MAIN */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-.topbar {
-  display: flex; align-items: center; gap: 12px;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  flex-shrink: 0;
-}
+.topbar { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
 .page-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; flex: 1; }
-.search-box {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 10px; padding: 7px 12px;
-  width: 220px; transition: border-color .2s;
-}
+.search-box { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 7px 12px; width: 220px; transition: border-color .2s; }
 .search-box:focus-within { border-color: var(--accent); }
 .search-box input { background: none; border: none; outline: none; font-size: 13px; color: var(--text); font-family: inherit; width: 100%; }
 .search-box input::placeholder { color: var(--text3); }
-.add-btn-main {
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 16px; border-radius: 10px;
-  background: var(--accent); color: #fff;
-  border: none; font-size: 13px; font-weight: 600;
-  cursor: pointer; font-family: inherit;
-  box-shadow: 0 0 16px var(--accent-glow);
-  transition: all .15s;
-}
+.add-btn-main { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 10px; background: var(--accent); color: #fff; border: none; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; box-shadow: 0 0 16px var(--accent-glow); transition: all .15s; }
 .add-btn-main:hover { background: var(--accent2); }
 
 /* GRID */
@@ -154,73 +65,38 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 
 /* CARD */
-.clip-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all .2s;
-  position: relative;
-}
+.clip-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: all .2s; position: relative; }
 .clip-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
 .thumb-wrap { position: relative; aspect-ratio: 16/9; background: var(--surface2); overflow: hidden; }
 .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 32px; }
-.platform-badge {
-  position: absolute; top: 8px; left: 8px;
-  padding: 2px 8px; border-radius: 20px;
-  font-size: 10px; font-weight: 700; letter-spacing: .5px;
-}
+.platform-badge { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .5px; }
 .platform-badge.yt { background: #ff0000; color: #fff; }
 .platform-badge.ig { background: linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); color: #fff; }
 .card-body { padding: 10px 12px 12px; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .card-meta { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 6px; }
 .card-cat { font-size: 11px; color: var(--accent); background: var(--accent-glow); padding: 1px 7px; border-radius: 20px; }
-.card-actions {
-  position: absolute; top: 8px; right: 8px;
-  display: none; gap: 4px;
-}
+.card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 4px; }
 .clip-card:hover .card-actions { display: flex; }
-.card-action-btn {
-  width: 28px; height: 28px; border-radius: 8px;
-  border: none; cursor: pointer; font-size: 13px;
-  display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(8px); transition: all .15s;
-}
+.card-action-btn { width: 28px; height: 28px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); transition: all .15s; }
 .btn-del { background: rgba(255,107,107,0.85); color: #fff; }
 .btn-del:hover { background: var(--red); }
 .btn-move { background: rgba(30,30,40,0.85); color: var(--text2); }
 .btn-move:hover { background: var(--surface3); color: var(--text); }
-
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: var(--text3); gap: 12px; }
 .empty-state .emoji { font-size: 48px; }
 .empty-state p { font-size: 14px; }
 
-/* ── MODAL ── */
+/* MODAL */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .overlay.open { display: flex; }
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 18px;
-  padding: 28px;
-  width: 440px; max-width: 95vw;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-  animation: modal-in .25s cubic-bezier(0.34,1.3,0.64,1);
-}
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; padding: 28px; width: 440px; max-width: 95vw; box-shadow: 0 24px 80px rgba(0,0,0,0.6); animation: modal-in .25s cubic-bezier(0.34,1.3,0.64,1); }
 @keyframes modal-in { from { opacity:0; transform: scale(0.94) translateY(10px); } to { opacity:1; transform: scale(1) translateY(0); } }
 .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
 .field { margin-bottom: 14px; }
 .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-.field input, .field select, .field textarea {
-  width: 100%; padding: 10px 12px;
-  border-radius: 10px; border: 1px solid var(--border2);
-  background: var(--surface2); color: var(--text);
-  font-size: 14px; font-family: inherit; outline: none;
-  transition: border-color .15s;
-}
+.field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text); font-size: 14px; font-family: inherit; outline: none; transition: border-color .15s; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
 .field textarea { resize: vertical; min-height: 70px; }
 .url-preview { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--surface3); font-size: 12px; color: var(--text2); display: none; }
@@ -231,94 +107,29 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .btn-cancel:hover { background: var(--surface2); }
 .btn-save { background: var(--accent); color: #fff; box-shadow: 0 0 12px var(--accent-glow); }
 .btn-save:hover { background: var(--accent2); }
-
-/* add cat modal */
 .cat-modal { width: 320px; }
 
-/* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-/* ── 잠금화면 ── */
-.lockscreen {
-  position: fixed; inset: 0;
-  background: var(--bg);
-  z-index: 9999;
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 20px;
-}
-.lockscreen.hidden { display: none; }
-.lock-title { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
-.lock-sub { font-size: 13px; color: var(--text3); margin-top: -12px; }
-.pin-dots { display: flex; gap: 14px; margin: 4px 0; }
-.pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border2); background: transparent; transition: all .2s; }
-.pin-dot.filled { background: var(--accent); border-color: var(--accent); }
-.pin-dot.error { background: var(--red); border-color: var(--red); animation: shake .3s; }
-.pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 220px; }
-.pin-key {
-  height: 58px; border-radius: 14px;
-  border: 1px solid var(--border2); background: var(--surface2);
-  color: var(--text); font-size: 20px; font-weight: 500;
-  cursor: pointer; font-family: inherit; transition: all .15s;
-}
-.pin-key:hover { background: var(--surface3); }
-.pin-key:active { transform: scale(0.95); }
-.pin-key.del { font-size: 16px; color: var(--text3); }
-.pin-key.empty { background: transparent; border-color: transparent; cursor: default; }
-.pin-error-msg { font-size: 12px; color: var(--red); height: 16px; }
-@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-
-/* ── VPN 설정 모달 ── */
-.vpn-modal { width: 360px; }
-
-/* ── 모바일 하단 네비게이션 ── */
-.mobile-nav {
-  display: none;
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  z-index: 50;
-  padding: 8px 0 env(safe-area-inset-bottom, 8px);
-}
-.mobile-nav-inner {
-  display: flex; justify-content: space-around; align-items: center;
-}
-.mobile-nav-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 6px 12px; border: none; background: none;
-  color: var(--text3); font-size: 10px; font-family: inherit;
-  cursor: pointer; transition: color .15s; border-radius: 10px;
-}
-.mobile-nav-btn.active { color: var(--accent); }
+/* 모바일 */
+.mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); z-index: 50; padding: 8px 0 env(safe-area-inset-bottom, 8px); }
+.mobile-nav-inner { display: flex; justify-content: space-around; align-items: center; }
+.mobile-nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 12px; border: none; background: none; color: var(--text3); font-size: 10px; font-family: inherit; cursor: pointer; transition: color .15s; border-radius: 10px; }
 .mobile-nav-btn span:first-child { font-size: 20px; }
-
-/* ── 모바일 사이드바 오버레이 ── */
-.sidebar-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 40;
-}
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; }
 .sidebar-overlay.open { display: block; }
 
 @media (max-width: 768px) {
-  .sidebar {
-    position: fixed; left: -260px; top: 0; bottom: 0;
-    width: 260px; z-index: 45;
-    transition: left .25s cubic-bezier(0.4,0,0.2,1);
-  }
+  .sidebar { position: fixed; left: -260px; top: 0; bottom: 0; width: 260px; z-index: 45; transition: left .25s cubic-bezier(0.4,0,0.2,1); }
   .sidebar.open { left: 0; }
   .main { width: 100%; }
-  .topbar {
-    padding: 12px 16px;
-    flex-wrap: wrap; gap: 8px;
-  }
+  .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
   .topbar > div:first-child { order: 1; flex: 1; }
   .search-box { order: 3; width: 100%; }
   .add-btn-main { order: 2; }
   #theme-btn { order: 2; }
-  #kr-clock { display: none !important; }
   .page-title { font-size: 16px; }
   .content { padding: 16px; padding-bottom: 80px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
@@ -330,106 +141,19 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 </head>
 <body>
 
-<!-- 잠금화면 -->
-<div class="lockscreen" id="lockscreen">
-  <div style="font-size:36px;">🔒</div>
-  <div class="lock-title">클립보관함</div>
-  <div class="lock-sub">6자리 비밀번호를 입력하세요</div>
-  <div class="pin-dots" id="pin-dots">
-    <div class="pin-dot" id="dot-0"></div>
-    <div class="pin-dot" id="dot-1"></div>
-    <div class="pin-dot" id="dot-2"></div>
-    <div class="pin-dot" id="dot-3"></div>
-    <div class="pin-dot" id="dot-4"></div>
-    <div class="pin-dot" id="dot-5"></div>
-  </div>
-  <div class="pin-error-msg" id="pin-error"></div>
-  <div class="pin-pad">
-    <button class="pin-key" onclick="pinInput('1')">1</button>
-    <button class="pin-key" onclick="pinInput('2')">2</button>
-    <button class="pin-key" onclick="pinInput('3')">3</button>
-    <button class="pin-key" onclick="pinInput('4')">4</button>
-    <button class="pin-key" onclick="pinInput('5')">5</button>
-    <button class="pin-key" onclick="pinInput('6')">6</button>
-    <button class="pin-key" onclick="pinInput('7')">7</button>
-    <button class="pin-key" onclick="pinInput('8')">8</button>
-    <button class="pin-key" onclick="pinInput('9')">9</button>
-    <button class="pin-key empty"></button>
-    <button class="pin-key" onclick="pinInput('0')">0</button>
-    <button class="pin-key del" onclick="pinDelete()">⌫</button>
-  </div>
-  <div style="font-size:11px;color:var(--text3);margin-top:8px;" id="pin-setup-msg"></div>
-</div>
-
-<!-- VPN 설정 모달 -->
-<div class="overlay" id="vpn-overlay" onclick="closeVpnModal(event)">
-  <div class="modal vpn-modal">
-    <div class="modal-title">🔐 VPN 설정</div>
-    <div class="field">
-      <label>서버 주소 (IP)</label>
-      <input type="text" id="vpn-host" placeholder="예: 192.168.1.1">
-    </div>
-    <div class="field">
-      <label>포트</label>
-      <input type="text" id="vpn-port" placeholder="예: 1194">
-    </div>
-    <div class="field">
-      <label>사용자명 (선택)</label>
-      <input type="text" id="vpn-user" placeholder="username">
-    </div>
-    <div class="field">
-      <label>비밀번호 (선택)</label>
-      <input type="password" id="vpn-pass" placeholder="password">
-    </div>
-    <div class="field">
-      <label>메모</label>
-      <input type="text" id="vpn-memo" placeholder="예: 집 VPN, 회사 VPN...">
-    </div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeVpnModal()">취소</button>
-      <button class="btn-save" onclick="saveVpnInfo()">저장</button>
-    </div>
-  </div>
-</div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
 <div class="layout">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">🎬 <span>클립</span>보관함</div>
     <div class="sidebar-section">카테고리</div>
     <div id="cat-list"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);margin-top:auto;">
-    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">AI API 키</div>
-    <div style="display:flex;gap:6px;">
-      <input type="password" id="api-key-input" placeholder="키 입력..." style="flex:1;padding:6px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter')saveApiKey()">
-      <button onclick="saveApiKey()" style="padding:6px 10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;">저장</button>
-    </div>
-    <div id="api-key-status" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
-  </div>
-  <div style="padding:10px 16px;border-top:1px solid var(--border);">
-    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">설정</div>
-    <button onclick="resetHiddenPin()" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;text-align:left;">🔒 히든 비밀번호 재설정</button>
-    <button onclick="resetMainPin()" style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;text-align:left;margin-top:4px;">🔑 메인 비밀번호 재설정</button>
-  </div>
-</aside>
+  </aside>
 
-  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:12px;flex:1;">
         <div class="page-title" id="page-title">전체</div>
-        <button id="hidden-btn" onclick="toggleHiddenMode()" title="히든 모드" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">
-          <span>🔒</span>
-          <span id="hidden-label">히든</span>
-        </button>
-        <button id="vpn-btn" onclick="openVpnModal()" title="VPN 동기화" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">
-          <span id="vpn-dot" style="width:7px;height:7px;border-radius:50%;background:var(--text3);transition:background .3s;"></span>
-          <span id="vpn-label">VPN</span>
-        </button>
-        <div id="kr-clock" style="display:flex;flex-direction:column;line-height:1.3;">
-          <div id="kr-time" style="font-size:13px;font-weight:700;letter-spacing:1px;font-family:monospace;color:var(--accent);">00:00:00</div>
-          <div id="kr-date" style="font-size:10px;color:var(--text3);">날짜</div>
-        </div>
       </div>
       <div class="search-box">
         <span style="color:var(--text3);font-size:14px;">🔍</span>
@@ -449,16 +173,13 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <div class="modal">
     <div class="modal-title">클립 추가</div>
     <div class="field">
-      <label id="url-field-label">유튜브 / 인스타 링크</label>
-      <div style="display:flex;gap:8px;">
-        <input type="url" id="clip-url" placeholder="https://youtube.com/... 또는 https://instagram.com/..." oninput="previewUrl()" style="flex:1;">
-        <button onclick="aiClassify()" id="ai-classify-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s;">✨ AI</button>
-      </div>
+      <label>유튜브 / 인스타 링크</label>
+      <input type="url" id="clip-url" placeholder="https://youtube.com/... 또는 https://instagram.com/..." oninput="previewUrl()">
       <div class="url-preview" id="url-preview"></div>
     </div>
     <div class="field">
       <label>제목</label>
-      <input type="text" id="clip-title" placeholder="AI 버튼을 누르면 자동 입력돼요">
+      <input type="text" id="clip-title" placeholder="제목을 입력하세요">
     </div>
     <div class="field">
       <label>카테고리</label>
@@ -467,13 +188,6 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
     <div class="field">
       <label>메모 (선택)</label>
       <textarea id="clip-memo" placeholder="간단한 메모..."></textarea>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;" onclick="document.getElementById('clip-hidden').checked=!document.getElementById('clip-hidden').checked">
-      <input type="checkbox" id="clip-hidden" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
-      <div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);">🔒 히든 클립</div>
-        <div style="font-size:11px;color:var(--text3);">비밀번호 입력 시에만 보여요</div>
-      </div>
     </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeAddModal()">취소</button>
@@ -491,12 +205,19 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   </div>
 </div>
 
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mobile-nav-btn" onclick="toggleMobileSidebar()"><span>☰</span><span>카테고리</span></button>
+    <button class="mobile-nav-btn" onclick="openAddModal()"><span>＋</span><span>추가</span></button>
+    <button class="mobile-nav-btn" onclick="toggleTheme()"><span>🌙</span><span>테마</span></button>
+  </div>
+</nav>
+
 <script>
-var clips = JSON.parse(localStorage.getItem('clips') || '[]');
+var clips = [];
 var currentCat = 'all';
 var movingClipId = null;
 
-// 카테고리 항상 고정 11개
 var cats = [
   {id:'cat_1', name:'스포츠', emoji:'⚾'},
   {id:'cat_2', name:'음악', emoji:'🎵'},
@@ -513,47 +234,21 @@ var cats = [
 
 function saveClips(){
   localStorage.setItem('clips', JSON.stringify(clips));
-  if(window.firebaseReady && window.firebaseSaveData){
-    window.firebaseSaveData({ clips: clips });
-  }
 }
-
-// Firebase에서 데이터 로드
-async function loadFromFirebase(){
-  if(!window.firebaseLoadData) return;
-  var data = await window.firebaseLoadData();
-  if(data && data.clips && data.clips.length > 0){
-    clips = data.clips;
-    localStorage.setItem('clips', JSON.stringify(clips));
-    renderAll();
-  }
-}
-
-window.addEventListener('firebaseReady', function(){
-  loadFromFirebase();
-});
-
-// Firebase 이미 준비된 경우
-if(window.firebaseReady) loadFromFirebase();
 
 function getYtId(url){
   var m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([^&?\/\s]{11})/);
   return m ? m[1] : null;
 }
-function getIgId(url){
-  return /instagram\.com\/(p|reel|reels)\//.test(url);
-}
+function getIgId(url){ return /instagram\.com\/(p|reel|reels)\//.test(url); }
 function getPlatform(url){
   if(/youtube\.com|youtu\.be/.test(url)) return 'yt';
   if(/instagram\.com/.test(url)) return 'ig';
-  // 히든 모드: 일반 URL도 허용
-  if(hiddenMode && /^https?:\/\//.test(url)) return 'web';
   return null;
 }
 function getThumbnail(url){
   var ytId = getYtId(url);
   if(ytId) return 'https://img.youtube.com/vi/'+ytId+'/mqdefault.jpg';
-  if(getIgId(url)) return null;
   return null;
 }
 
@@ -563,10 +258,7 @@ function previewUrl(){
   var p = getPlatform(url);
   if(!p){ preview.className='url-preview'; return; }
   var ytId = getYtId(url);
-  var txt;
-  if(p === 'yt') txt = '✅ 유튜브 영상' + (ytId ? ' (ID: '+ytId+')' : '');
-  else if(p === 'ig') txt = '✅ 인스타그램 링크';
-  else txt = '🌐 일반 사이트: ' + url;
+  var txt = p==='yt' ? '✅ 유튜브 영상'+(ytId?' (ID: '+ytId+')':'') : '✅ 인스타그램 링크';
   preview.textContent = txt;
   preview.className = 'url-preview show';
 }
@@ -576,17 +268,6 @@ function openAddModal(){
   document.getElementById('clip-title').value='';
   document.getElementById('clip-memo').value='';
   document.getElementById('url-preview').className='url-preview';
-  document.getElementById('clip-hidden').checked=hiddenMode;
-  // 히든 모드일 때 라벨/placeholder 변경
-  var urlLabel = document.getElementById('url-field-label');
-  var urlInput = document.getElementById('clip-url');
-  if(hiddenMode){
-    urlLabel.textContent = '유튜브 / 인스타 / 일반 링크';
-    urlInput.placeholder = 'https://youtube.com/... 또는 https://...';
-  } else {
-    urlLabel.textContent = '유튜브 / 인스타 링크';
-    urlInput.placeholder = 'https://youtube.com/... 또는 https://instagram.com/...';
-  }
   var sel = document.getElementById('clip-cat');
   sel.innerHTML = cats.map(function(c){ return '<option value="'+c.id+'"'+(currentCat===c.id?' selected':'')+'>'+c.emoji+' '+c.name+'</option>'; }).join('');
   document.getElementById('add-overlay').classList.add('open');
@@ -601,155 +282,25 @@ function saveClip(){
   var title = document.getElementById('clip-title').value.trim();
   var catId = document.getElementById('clip-cat').value;
   var memo = document.getElementById('clip-memo').value.trim();
-  var hidden = document.getElementById('clip-hidden').checked;
   if(!url){ alert('링크를 입력해주세요!'); return; }
   var p = getPlatform(url);
   if(!p){ alert('유튜브 또는 인스타그램 링크만 가능해요!'); return; }
   if(!title){
     var ytId = getYtId(url);
-    if(p==='yt') title = ytId ? '유튜브 영상 ('+ytId.slice(0,6)+'...)' : '유튜브 영상';
-    else if(p==='ig') title = '인스타그램 영상';
-    else { try { title = new URL(url).hostname; } catch(e){ title = '웹 링크'; } }
+    title = p==='yt' ? (ytId?'유튜브 영상 ('+ytId.slice(0,6)+'...)':'유튜브 영상') : '인스타그램 영상';
   }
-  var clip = { id: Date.now(), url: url, title: title, catId: catId, memo: memo, hidden: hidden, platform: p, thumb: getThumbnail(url), createdAt: new Date().toISOString() };
+  var clip = { id: Date.now(), url: url, title: title, catId: catId, memo: memo, platform: p, thumb: getThumbnail(url), createdAt: new Date().toISOString() };
   clips.unshift(clip);
   saveClips();
   document.getElementById('add-overlay').classList.remove('open');
   renderAll();
 }
 
-
-
-
-
-
-// ── AI 자동 분류 ──
-var clipApiKey = localStorage.getItem('clip_api_key') || '';
-if(clipApiKey){ var _ki = document.getElementById('api-key-input'); if(_ki) _ki.placeholder = '키 저장됨 ✅'; }
-function updateApiKeyStatus(){
-  var el = document.getElementById('api-key-status');
-  if(!el) return;
-  el.textContent = clipApiKey ? '✅ 키 저장됨' : '키 없으면 직접 선택해요';
-}
-function saveApiKey(){
-  var k = document.getElementById('api-key-input').value.trim();
-  if(!k) return;
-  clipApiKey = k;
-  localStorage.setItem('clip_api_key', k);
-  document.getElementById('api-key-input').value = '';
-  updateApiKeyStatus();
-updateVpnBtn();
-initLock();
-}
-
-// JSON에서 catId 안전하게 추출
-function safeParseJson(text){
-  try {
-    var clean = text.trim().replace(/```json|```/g,'').trim();
-    // JSON 블록만 추출 시도
-    var match = clean.match(/\{[^}]+\}/);
-    if(match) clean = match[0];
-    var parsed = JSON.parse(clean);
-    return parsed.catId || null;
-  } catch(e) {
-    // catId 직접 찾기
-    var m = text.match(/"catId"\s*:\s*"(cat_\d+)"/);
-    return m ? m[1] : null;
-  }
-}
-
-async function aiClassify(){
-  var url = document.getElementById('clip-url').value.trim();
-  if(!url){ alert('링크를 먼저 입력해주세요!'); return; }
-
-  var btn = document.getElementById('ai-classify-btn');
-  btn.textContent = '...'; btn.disabled = true;
-
-  var platform = getPlatform(url);
-  var memo = document.getElementById('clip-memo').value.trim();
-  var catList = cats.map(function(c){ return c.id+': '+c.name; }).join(', ');
-
-  try {
-    if(platform === 'yt'){
-      // ── 유튜브: oEmbed로 실제 제목 가져오기 ──
-      var oembedUrl = 'https://www.youtube.com/oembed?url='+encodeURIComponent(url)+'&format=json';
-      var res = await fetch(oembedUrl);
-      if(!res.ok) throw new Error('유튜브 정보를 가져오지 못했어요');
-      var data = await res.json();
-      var ytTitle = data.title || '';
-      if(ytTitle) document.getElementById('clip-title').value = ytTitle;
-
-      // 제목 기반으로 AI 카테고리 분류
-      if(clipApiKey){
-        var prompt = '다음 유튜브 영상 제목과 메모를 보고 카테고리를 JSON으로만 답해줘. 제목: '+ytTitle+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 다른 말 하지마. 분류 규칙: 가수명/아이돌/밴드/노래/음악→음악, 운동/헬스/스포츠→스포츠, 음식/레시피/먹방→요리, 여행→여행, 게임→게임, 패션/코디→패션, 뷰티/메이크업→뷰티, 드라마/영화/예능→드라마/영화, 브이로그/일상→일상/브이로그. 메모 키워드 최우선.';
-        var aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-          method:'POST',
-          headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-          body: JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:50,messages:[{role:'user',content:prompt}]})
-        });
-        var aiData = await aiRes.json();
-        if(!aiData.error){
-          var catId = safeParseJson(aiData.content[0].text);
-          if(catId) document.getElementById('clip-cat').value = catId;
-        }
-      }
-      document.getElementById('url-preview').textContent = '✅ 유튜브 제목 자동 입력 완료!';
-      document.getElementById('url-preview').className = 'url-preview show';
-
-    } else if(platform === 'ig'){
-      // ── 인스타: AI로 카테고리만 분류 ──
-      if(!clipApiKey){ 
-        document.getElementById('url-preview').textContent = '📸 인스타: 메모에 힌트 입력 후 AI 버튼 누르거나 직접 선택해주세요';
-        document.getElementById('url-preview').className = 'url-preview show';
-        return;
-      }
-      var prompt = '다음 인스타그램 URL과 메모를 보고 카테고리를 JSON으로만 답해줘. URL: '+url+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 다른 말 하지마. 분류 규칙: 가수명/아이돌/밴드/노래/음악→음악, 운동/헬스/스포츠→스포츠, 음식/레시피/먹방→요리, 여행→여행, 게임→게임, 패션/코디→패션, 뷰티/메이크업→뷰티, 드라마/영화/예능→드라마/영화, 브이로그/일상→일상/브이로그. 메모 키워드 최우선.';
-      var res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:50,messages:[{role:'user',content:prompt}]})
-      });
-      var data = await res.json();
-      if(data.error) throw new Error(data.error.message);
-      var catId = safeParseJson(data.content[0].text);
-      if(catId) document.getElementById('clip-cat').value = catId;
-      document.getElementById('url-preview').textContent = catId ? '📸 인스타: 카테고리 분류 완료! 제목을 입력해주세요' : '📸 인스타: 카테고리를 직접 선택해주세요';
-      document.getElementById('url-preview').className = 'url-preview show';
-  } else if(platform === 'web'){
-      // ── 일반 웹사이트: AI로 카테고리 분류 ──
-      var hostname = '';
-      try { hostname = new URL(url).hostname; } catch(e){ hostname = url; }
-      if(!document.getElementById('clip-title').value.trim())
-        document.getElementById('clip-title').value = hostname;
-      if(!clipApiKey){
-        document.getElementById('url-preview').textContent = '🌐 일반 사이트: 제목을 직접 입력하고 카테고리를 선택해주세요';
-        document.getElementById('url-preview').className = 'url-preview show';
-        return;
-      }
-      var prompt = '다음 URL과 메모를 보고 카테고리를 JSON으로만 답해줘. URL: '+url+(memo?' 메모: '+memo:'')+' 카테고리 목록: '+catList+' 형식: {"catId":"cat_번호"} JSON만 출력. 다른 말 하지마.';
-      var res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':clipApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:50,messages:[{role:'user',content:prompt}]})
-      });
-      var data = await res.json();
-      if(data.error) throw new Error(data.error.message);
-      var catId = safeParseJson(data.content[0].text);
-      if(catId) document.getElementById('clip-cat').value = catId;
-      document.getElementById('url-preview').textContent = '🌐 일반 사이트 저장됨. 제목을 확인해주세요';
-      document.getElementById('url-preview').className = 'url-preview show';
-    }
-    alert('오류: '+e.message);
-  } finally {
-    btn.textContent = '✨ AI'; btn.disabled = false;
-  }
-}
-
 function openMoveModal(clipId){
   movingClipId = clipId;
-  var clip = clips.find(function(c){ return c.id === clipId; });
+  var clip = clips.find(function(c){ return c.id===clipId; });
   var list = document.getElementById('move-cat-list');
-  list.innerHTML = cats.filter(function(c){ return c.id !== clip.catId; }).map(function(c){
+  list.innerHTML = cats.filter(function(c){ return c.id!==clip.catId; }).map(function(c){
     return '<button onclick="moveClip(\''+c.id+'\')" style="padding:10px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:14px;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border2)\'">'+c.emoji+' '+c.name+'</button>';
   }).join('');
   document.getElementById('move-overlay').classList.add('open');
@@ -759,33 +310,28 @@ function closeMoveModal(e){
     document.getElementById('move-overlay').classList.remove('open');
 }
 function moveClip(catId){
-  var idx = clips.findIndex(function(c){ return c.id === movingClipId; });
-  if(idx >= 0){ clips[idx].catId = catId; saveClips(); }
+  var idx = clips.findIndex(function(c){ return c.id===movingClipId; });
+  if(idx>=0){ clips[idx].catId=catId; saveClips(); }
   document.getElementById('move-overlay').classList.remove('open');
   renderAll();
 }
 function deleteClip(id){
-  clips = clips.filter(function(c){ return c.id !== id; });
+  clips = clips.filter(function(c){ return c.id!==id; });
   saveClips(); renderCards();
 }
-
-function openClip(url){ window.open(url, '_blank'); }
+function openClip(url){ window.open(url,'_blank'); }
 
 function renderSidebar(){
   var list = document.getElementById('cat-list');
-  var allCount = clips.filter(function(c){ return hiddenMode ? c.hidden : !c.hidden; }).length;
-  var allActive = currentCat === 'all';
-  var html = '<div class="cat-item'+(allActive?' active':'')+'" onclick="selectCat(\'all\')">'
+  var allCount = clips.length;
+  var html = '<div class="cat-item'+(currentCat==='all'?' active':'')+'" onclick="selectCat(\'all\')">'
     +'<span class="cat-icon">🗂</span><span class="cat-name">전체</span>'
     +'<span class="cat-count">'+allCount+'</span></div>';
   cats.forEach(function(c){
-    var cnt = clips.filter(function(cl){ return cl.catId===c.id && (hiddenMode ? cl.hidden : !cl.hidden); }).length;
-    var active = currentCat===c.id;
-    html += '<div class="cat-item'+(active?' active':'')+'" onclick="selectCat(\''+c.id+'\')">'
-      +'<span class="cat-icon">'+c.emoji+'</span>'
-      +'<span class="cat-name">'+c.name+'</span>'
-      +'<span class="cat-count">'+cnt+'</span>'
-      +'</div>';
+    var cnt = clips.filter(function(cl){ return cl.catId===c.id; }).length;
+    html += '<div class="cat-item'+(currentCat===c.id?' active':'')+'" onclick="selectCat(\''+c.id+'\')">'
+      +'<span class="cat-icon">'+c.emoji+'</span><span class="cat-name">'+c.name+'</span>'
+      +'<span class="cat-count">'+cnt+'</span></div>';
   });
   list.innerHTML = html;
 }
@@ -795,8 +341,7 @@ function renderCards(){
   var filtered = clips.filter(function(c){
     var catOk = currentCat==='all' || c.catId===currentCat;
     var searchOk = !q || c.title.toLowerCase().includes(q) || (c.memo||'').toLowerCase().includes(q);
-    var hiddenOk = hiddenMode ? c.hidden : !c.hidden;
-    return catOk && searchOk && hiddenOk;
+    return catOk && searchOk;
   });
   var grid = document.getElementById('grid');
   if(filtered.length===0){
@@ -806,18 +351,17 @@ function renderCards(){
   grid.innerHTML = filtered.map(function(c){
     var thumbHtml = c.thumb
       ? '<img src="'+c.thumb+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
-        +'<div class="thumb-placeholder" style="display:none">'+(c.platform==='yt'?'▶️':c.platform==='ig'?'📸':'🌐')+'</div>'
-      : '<div class="thumb-placeholder">'+(c.platform==='yt'?'▶️':c.platform==='ig'?'📸':'🌐')+'</div>';
+        +'<div class="thumb-placeholder" style="display:none">'+(c.platform==='yt'?'▶️':'📸')+'</div>'
+      : '<div class="thumb-placeholder">'+(c.platform==='yt'?'▶️':'📸')+'</div>';
     var cat = cats.find(function(ct){ return ct.id===c.catId; });
-    var badge = c.platform==='yt' ? '<span class="platform-badge yt">YT</span>' : c.platform==='ig' ? '<span class="platform-badge ig">IG</span>' : '<span class="platform-badge" style="background:#444;color:#fff;">WEB</span>';
+    var badge = c.platform==='yt'?'<span class="platform-badge yt">YT</span>':'<span class="platform-badge ig">IG</span>';
     return '<div class="clip-card" onclick="openClip(\''+c.url+'\')">'
       +'<div class="thumb-wrap">'+thumbHtml+badge
       +'<div class="card-actions" onclick="event.stopPropagation()">'
       +'<button class="card-action-btn btn-move" onclick="openMoveModal('+c.id+')" title="이동">↗</button>'
       +'<button class="card-action-btn btn-del" onclick="deleteClip('+c.id+')" title="삭제">✕</button>'
       +'</div></div>'
-      +'<div class="card-body">'
-      +'<div class="card-title">'+c.title+'</div>'
+      +'<div class="card-body"><div class="card-title">'+c.title+'</div>'
       +'<div class="card-meta">'+(cat?'<span class="card-cat">'+cat.emoji+' '+cat.name+'</span>':'')
       +(c.memo?'<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+c.memo+'</span>':'')
       +'</div></div></div>';
@@ -827,255 +371,39 @@ function renderCards(){
 function selectCat(id){
   currentCat = id;
   var cat = cats.find(function(c){ return c.id===id; });
-  document.getElementById('page-title').textContent = id==='all' ? '전체' : (cat ? cat.emoji+' '+cat.name : '전체');
+  document.getElementById('page-title').textContent = id==='all'?'전체':(cat?cat.emoji+' '+cat.name:'전체');
   renderAll();
 }
-
 function renderAll(){ renderSidebar(); renderCards(); }
 
-// 키보드 단축키
 document.addEventListener('keydown', function(e){
-  if(e.key==='Escape'){
-    document.querySelectorAll('.overlay.open').forEach(function(o){ o.classList.remove('open'); });
-  }
+  if(e.key==='Escape') document.querySelectorAll('.overlay.open').forEach(function(o){ o.classList.remove('open'); });
 });
 
-renderAll();
-
-// ── 잠금화면 ──
-var PIN_KEY = 'clips_pin';
-var HIDDEN_PIN_KEY = 'clips_hidden_pin';
-var pinBuffer = '';
-var pinMode = localStorage.getItem(PIN_KEY) ? 'unlock' : 'setup'; // setup or unlock
-
-function initLock(){
-  var msg = document.getElementById('pin-setup-msg');
-  if(pinMode === 'setup') msg.textContent = '처음 입력한 6자리가 메인 비밀번호로 설정돼요';
-  else msg.textContent = '';
-}
-
-function pinInput(n){
-  if(pinBuffer.length >= 6) return;
-  pinBuffer += n;
-  updateDots();
-  if(pinBuffer.length === 6) setTimeout(checkPin, 120);
-}
-
-function pinDelete(){
-  pinBuffer = pinBuffer.slice(0,-1);
-  updateDots();
-}
-
-function updateDots(){
-  for(var i=0;i<6;i++){
-    var d = document.getElementById('dot-'+i);
-    d.classList.toggle('filled', i < pinBuffer.length);
-    d.classList.remove('error');
-  }
-  document.getElementById('pin-error').textContent = '';
-}
-
-function checkPin(){
-  var saved = localStorage.getItem(PIN_KEY);
-  if(pinMode === 'setup'){
-    localStorage.setItem(PIN_KEY, pinBuffer);
-    document.getElementById('lockscreen').classList.add('hidden');
-  } else {
-    if(pinBuffer === saved){
-      document.getElementById('lockscreen').classList.add('hidden');
-    } else {
-      for(var i=0;i<6;i++) document.getElementById('dot-'+i).classList.add('error');
-      document.getElementById('pin-error').textContent = '비밀번호가 틀렸어요';
-      setTimeout(function(){ pinBuffer=''; updateDots(); }, 600);
-      return;
-    }
-  }
-  pinBuffer = '';
-}
-
-// ── 히든 모드 ──
-var hiddenMode = false;
-
-function toggleHiddenMode(){
-  if(!hiddenMode){
-    var savedHidden = localStorage.getItem(HIDDEN_PIN_KEY);
-    if(!savedHidden){
-      // 히든 비번 처음 설정
-      var input = prompt('히든 전용 비밀번호 6자리를 설정하세요 (메인과 다르게!)');
-      if(!input || input.length !== 6){ alert('6자리를 입력해주세요!'); return; }
-      var confirm2 = prompt('한 번 더 입력해주세요');
-      if(input !== confirm2){ alert('비밀번호가 일치하지 않아요!'); return; }
-      localStorage.setItem(HIDDEN_PIN_KEY, input);
-      savedHidden = input;
-      var input2 = savedHidden;
-    } else {
-      var input2 = prompt('히든 비밀번호 6자리를 입력하세요');
-      if(!input2) return;
-      if(input2 !== savedHidden){ alert('비밀번호가 틀렸어요!'); return; }
-    }
-    hiddenMode = true;
-    var btn = document.getElementById('hidden-btn');
-    btn.style.borderColor = 'var(--accent)';
-    btn.style.color = 'var(--accent)';
-    document.getElementById('hidden-label').textContent = '히든 ON';
-  } else {
-    hiddenMode = false;
-    var btn = document.getElementById('hidden-btn');
-    btn.style.borderColor = 'var(--border2)';
-    btn.style.color = 'var(--text3)';
-    document.getElementById('hidden-label').textContent = '히든';
-  }
-  renderAll();
-}
-
-// ── 비밀번호 재설정 ──
-function resetHiddenPin(){
-  var saved = localStorage.getItem(PIN_KEY);
-  var input = prompt('메인 비밀번호를 입력하세요 (본인 확인)');
-  if(!input) return;
-  if(input !== saved){ alert('메인 비밀번호가 틀렸어요!'); return; }
-  localStorage.removeItem(HIDDEN_PIN_KEY);
-  if(hiddenMode){ hiddenMode = false; renderAll(); }
-  alert('히든 비밀번호가 초기화됐어요! 히든 버튼을 누르면 새로 설정할 수 있어요.');
-}
-
-function resetMainPin(){
-  var saved = localStorage.getItem(PIN_KEY);
-  var input = prompt('현재 메인 비밀번호를 입력하세요');
-  if(!input) return;
-  if(input !== saved){ alert('비밀번호가 틀렸어요!'); return; }
-  var newPin = prompt('새 메인 비밀번호 6자리를 입력하세요');
-  if(!newPin || newPin.length !== 6){ alert('6자리를 입력해주세요!'); return; }
-  var confirm2 = prompt('한 번 더 입력해주세요');
-  if(newPin !== confirm2){ alert('비밀번호가 일치하지 않아요!'); return; }
-  localStorage.setItem(PIN_KEY, newPin);
-  alert('메인 비밀번호가 변경됐어요!');
-}
-
-// ── VPN 설정 ──
-var vpnInfo = JSON.parse(localStorage.getItem('vpn_info') || '{}');
-var vpnOn = false;
-
-function openVpnModal(){
-  document.getElementById('vpn-host').value = vpnInfo.host || '';
-  document.getElementById('vpn-port').value = vpnInfo.port || '';
-  document.getElementById('vpn-user').value = vpnInfo.user || '';
-  document.getElementById('vpn-pass').value = vpnInfo.pass || '';
-  document.getElementById('vpn-memo').value = vpnInfo.memo || '';
-  document.getElementById('vpn-overlay').classList.add('open');
-}
-function closeVpnModal(e){
-  if(!e || e.target===document.getElementById('vpn-overlay'))
-    document.getElementById('vpn-overlay').classList.remove('open');
-}
-function saveVpnInfo(){
-  vpnInfo = {
-    host: document.getElementById('vpn-host').value.trim(),
-    port: document.getElementById('vpn-port').value.trim(),
-    user: document.getElementById('vpn-user').value.trim(),
-    pass: document.getElementById('vpn-pass').value.trim(),
-    memo: document.getElementById('vpn-memo').value.trim(),
-  };
-  localStorage.setItem('vpn_info', JSON.stringify(vpnInfo));
-  document.getElementById('vpn-overlay').classList.remove('open');
-  updateVpnBtn();
-}
-function updateVpnBtn(){
-  var dot = document.getElementById('vpn-dot');
-  var label = document.getElementById('vpn-label');
-  if(vpnInfo.host){
-    dot.style.background = '#f5a623';
-    label.textContent = vpnInfo.memo || 'VPN 설정됨';
-    document.getElementById('vpn-btn').style.color = '#f5a623';
-    document.getElementById('vpn-btn').style.borderColor = '#f5a623';
-  }
-}
-
-// VPN 토글 (UI only - 나중에 기능 연결)
-function toggleVPN(){
-  vpnOn = !vpnOn;
-  var btn = document.getElementById('vpn-btn');
-  var dot = document.getElementById('vpn-dot');
-  var label = document.getElementById('vpn-label');
-  if(vpnOn){
-    dot.style.background = '#4ecf8a';
-    btn.style.borderColor = '#4ecf8a';
-    btn.style.color = '#4ecf8a';
-    label.textContent = 'VPN 연결됨';
-  } else {
-    dot.style.background = 'var(--text3)';
-    btn.style.borderColor = 'var(--border2)';
-    btn.style.color = 'var(--text3)';
-    label.textContent = 'VPN';
-  }
-}
-
-// 한국 시간 시계
-function updateKRClock(){
-  var now = new Date();
-  var kr = new Date(now.toLocaleString('en-US',{timeZone:'Asia/Seoul'}));
-  var h = String(kr.getHours()).padStart(2,'0');
-  var m = String(kr.getMinutes()).padStart(2,'0');
-  var s = String(kr.getSeconds()).padStart(2,'0');
-  document.getElementById('kr-time').textContent = h+':'+m+':'+s;
-  var days = ['일','월','화','수','목','금','토'];
-  document.getElementById('kr-date').textContent = '🇰🇷 '+(kr.getMonth()+1)+'월 '+kr.getDate()+'일 ('+days[kr.getDay()]+')';
-}
-updateKRClock();
-setInterval(updateKRClock, 1000);
-updateApiKeyStatus();
-updateVpnBtn();
-initLock();
-
-// 테마 토글
+// 테마
 var savedTheme = localStorage.getItem('clips_theme') || 'dark';
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('theme-btn').textContent = t==='dark' ? '🌙' : '☀️';
+  document.getElementById('theme-btn').textContent = t==='dark'?'🌙':'☀️';
   localStorage.setItem('clips_theme', t);
 }
 function toggleTheme(){
   var cur = document.documentElement.getAttribute('data-theme') || 'dark';
-  applyTheme(cur==='dark' ? 'light' : 'dark');
+  applyTheme(cur==='dark'?'light':'dark');
 }
 applyTheme(savedTheme);
 
-// ── 모바일 사이드바 ──
+// 모바일 사이드바
 function toggleMobileSidebar(){
-  var sidebar = document.querySelector('.sidebar');
-  var overlay = document.getElementById('sidebar-overlay');
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('open');
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
 }
 function closeMobileSidebar(){
   document.querySelector('.sidebar').classList.remove('open');
   document.getElementById('sidebar-overlay').classList.remove('open');
 }
+
+renderAll();
 </script>
-
-<!-- 모바일 사이드바 오버레이 -->
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
-
-<!-- 모바일 하단 네비게이션 -->
-<nav class="mobile-nav">
-  <div class="mobile-nav-inner">
-    <button class="mobile-nav-btn" onclick="toggleMobileSidebar()">
-      <span>☰</span>
-      <span>카테고리</span>
-    </button>
-    <button class="mobile-nav-btn" onclick="openAddModal()">
-      <span>＋</span>
-      <span>추가</span>
-    </button>
-    <button class="mobile-nav-btn" onclick="toggleHiddenMode()">
-      <span>🔒</span>
-      <span>히든</span>
-    </button>
-    <button class="mobile-nav-btn" onclick="toggleTheme()">
-      <span>🌙</span>
-      <span>테마</span>
-    </button>
-  </div>
-</nav>
 </body>
 </html>
